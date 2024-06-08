@@ -32,6 +32,8 @@ public class KafkaSpecificProtoProducer {
         Future<RecordMetadata> future = producer.send(new ProducerRecord<>("ProtoRequests", dynamicMessage), (recordMetadata, e) -> {
             if (null == e) {
                 System.out.println(recordMetadata.topic() + " " + recordMetadata.partition());
+            }else{
+                e.printStackTrace();
             }
         });
 /*        while (future.isDone()) {

@@ -32,5 +32,6 @@ public class KafkaClientConsumer {
             //consumer.commitAsync();
 
         }
+        consumer.close();
     }
 }

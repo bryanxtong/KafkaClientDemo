@@ -22,6 +22,8 @@ public class KafkaClientProducer {
         Future<RecordMetadata> future = producer.send(new ProducerRecord<String, String>("bRequests", "hi", "Bryan"), (recordMetadata, e) -> {
             if(null == e){
                 System.out.println(recordMetadata.topic() +" "+ recordMetadata.partition());
+            }else{
+                e.printStackTrace();
             }
         });
 /*        while (future.isDone()) {

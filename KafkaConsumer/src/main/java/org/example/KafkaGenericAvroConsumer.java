@@ -39,5 +39,6 @@ public class KafkaGenericAvroConsumer {
             });
             //consumer.commitAsync();
         }
+        consumer.close();
     }
 }

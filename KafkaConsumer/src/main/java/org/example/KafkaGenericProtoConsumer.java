@@ -42,5 +42,6 @@ public class KafkaGenericProtoConsumer {
             //consumer.commitAsync();
 
         }
+        consumer.close();
     }
 }

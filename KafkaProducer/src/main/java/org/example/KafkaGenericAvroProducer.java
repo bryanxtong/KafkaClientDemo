@@ -52,6 +52,8 @@ public class KafkaGenericAvroProducer {
         Future<RecordMetadata> future = producer.send(record, (recordMetadata, e) -> {
             if (null == e) {
                 System.out.println(recordMetadata.topic() + " " + recordMetadata.partition());
+            }else{
+                e.printStackTrace();
             }
         });
         producer.flush();

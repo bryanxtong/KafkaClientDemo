@@ -39,5 +39,6 @@ public class KafkaSpecificAvroConsumer {
             //consumer.commitAsync();
 
         }
+        consumer.close();
     }
 }

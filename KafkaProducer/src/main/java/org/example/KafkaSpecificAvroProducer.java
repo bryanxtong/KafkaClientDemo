@@ -26,6 +26,8 @@ public class KafkaSpecificAvroProducer {
         Future<RecordMetadata> future = producer.send(new ProducerRecord<>("bRequests", String.valueOf(customer.getId()), customer), (recordMetadata, e) -> {
             if(null == e){
                 System.out.println(recordMetadata.topic() +" "+ recordMetadata.partition());
+            }else{
+                e.printStackTrace();
             }
         });
 /*        while (future.isDone()) {
