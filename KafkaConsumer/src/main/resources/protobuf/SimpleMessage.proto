@@ -1,0 +1,7 @@
+syntax = "proto3";
+package org.example;
+option java_outer_classname = "SimpleMessageProto";
+message SimpleMessage{
+  string content = 1;
+  string date_time = 2;
+}
