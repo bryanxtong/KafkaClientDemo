@@ -20,6 +20,7 @@ public class GsonSerde<T> implements Serializer<T>, Deserializer<T> {
         //Serializer.super.configure(configs, isKey);
         String configKey = isKey ? CONFIG_KEY_CLASS : CONFIG_VALUE_CLASS;
         String className = (String) configs.get(configKey);
+        if(className == null) return;
         try {
             clazz = (Class<T>) Class.forName(className);
         } catch (ClassNotFoundException e) {

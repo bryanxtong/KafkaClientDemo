@@ -1,23 +1,22 @@
 package org.example.serde;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serializer;
-
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Map;
 
-public class GsonSerde<T> implements Serializer<T>, Deserializer<T> {
+public class JacksonSerde<T> implements Serializer<T>, Deserializer<T> {
     public static final String CONFIG_VALUE_CLASS = "value.deserializer.class";
     public static final String CONFIG_KEY_CLASS = "key.deserializer.class";
     private Class<T> clazz;
-    private Gson gson = new GsonBuilder().create();
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public void configure(Map<String, ?> configs, boolean isKey) {
-        //Serializer.super.configure(configs, isKey);
         String configKey = isKey ? CONFIG_KEY_CLASS : CONFIG_VALUE_CLASS;
         String className = (String) configs.get(configKey);
         if(className == null) return;
@@ -30,7 +29,11 @@ public class GsonSerde<T> implements Serializer<T>, Deserializer<T> {
 
     @Override
     public byte[] serialize(String topic, T data) {
-        return gson.toJson(data).getBytes();
+        try {
+            return objectMapper.writeValueAsBytes(data);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -45,7 +48,11 @@ public class GsonSerde<T> implements Serializer<T>, Deserializer<T> {
 
     @Override
     public T deserialize(String topic, byte[] data) {
-        return gson.fromJson(new String(data), clazz);
+        try {
+            return objectMapper.readValue(data, clazz);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
