@@ -7,18 +7,18 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
+
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Properties;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Consume Json record with Jason schema validation
  */
 public class KafkaSpecificJsonConsumer {
+    private volatile boolean keepConsuming = true;
 
-    public static void main(String[] args) {
-
+    public Properties buildKafkaConfig() {
         Properties kafkaProps = new Properties();
         kafkaProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         kafkaProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, KafkaJsonSchemaDeserializer.class);
@@ -28,20 +28,31 @@ public class KafkaSpecificJsonConsumer {
         kafkaProps.put(KafkaJsonDeserializerConfig.JSON_VALUE_TYPE, ProductWithSchema.class.getName());
         kafkaProps.put("schema.registry.url", "http://localhost:8081");
         kafkaProps.put("json.fail.invalid.schema", true);
+        return kafkaProps;
+    }
 
+    public void consumeMessages() {
+        Properties kafkaProps = this.buildKafkaConfig();
         Consumer<String, ProductWithSchema> consumer = new KafkaConsumer<>(kafkaProps);
         consumer.subscribe(Collections.singleton("JsonSchema5"));
-        AtomicInteger c = new AtomicInteger(0);
-        while (true) {
-            int i = c.incrementAndGet();
-            if (i == 50) break;
+        while (keepConsuming) {
             ConsumerRecords<String, ProductWithSchema> poll = consumer.poll(Duration.ofMillis(300));
             System.out.println("polling records...." + poll.count());
             poll.forEach(record -> {
                 System.out.println("key: " + record.key() + " value: " + record.value().toString() + " offset: " + record.offset());
             });
-            //consumer.commitAsync();
         }
         consumer.close();
+    }
+
+    private void shutdown() {
+        keepConsuming = false;
+    }
+
+    public static void main(String[] args) {
+        KafkaSpecificJsonConsumer consumer = new KafkaSpecificJsonConsumer();
+        consumer.consumeMessages();
+        Runtime.getRuntime().addShutdownHook(new Thread(consumer::shutdown));
+
     }
 }

@@ -13,12 +13,11 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Properties;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class KafkaGenericProtoConsumer {
+    private volatile boolean keepConsuming = true;
 
-    public static void main(String[] args) {
-
+    public Properties buildKafkaConfig() {
         Properties kafkaProps = new Properties();
         kafkaProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         kafkaProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, KafkaProtobufDeserializer.class);
@@ -26,22 +25,34 @@ public class KafkaGenericProtoConsumer {
         kafkaProps.put(ConsumerConfig.GROUP_ID_CONFIG, "group");
         kafkaProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
         kafkaProps.put(KafkaProtobufDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://localhost:8081");
+        return kafkaProps;
+    }
+
+    public void consumeMessages() {
+        Properties kafkaProps = this.buildKafkaConfig();
         Consumer<String, DynamicMessage> consumer = new KafkaConsumer<>(kafkaProps);
         consumer.subscribe(Collections.singleton("ProtoRequests"));
-        AtomicInteger c = new AtomicInteger(0);
-        while (true) {
-            int i = c.incrementAndGet();
-            if (i == 50) break;
+        while (keepConsuming) {
             ConsumerRecords<String, DynamicMessage> poll = consumer.poll(Duration.ofMillis(300));
             System.out.println("polling records...." + poll.count());
             poll.forEach(record -> {
                 for (Descriptors.FieldDescriptor fieldDescriptor : record.value().getAllFields().keySet()) {
-                    System.out.println(fieldDescriptor.getName() + " " + record.value().getAllFields().get(fieldDescriptor));
+                    System.out.print(fieldDescriptor.getName() + " " + record.value().getAllFields().get(fieldDescriptor));
+                    System.out.println();
                 }
             });
-            //consumer.commitAsync();
-
         }
         consumer.close();
     }
+
+    private void shutdown() {
+        keepConsuming = false;
+    }
+
+    public static void main(String[] args) {
+        KafkaGenericProtoConsumer consumer = new KafkaGenericProtoConsumer();
+        consumer.consumeMessages();
+        Runtime.getRuntime().addShutdownHook(new Thread(consumer::shutdown));
+    }
+
 }

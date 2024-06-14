@@ -1,4 +1,6 @@
 package org.example;
+
+import com.google.protobuf.DynamicMessage;
 import io.confluent.kafka.serializers.protobuf.KafkaProtobufSerializer;
 import io.confluent.kafka.serializers.protobuf.KafkaProtobufSerializerConfig;
 import org.apache.kafka.clients.producer.*;
@@ -19,22 +21,21 @@ public class KafkaGenericProtoProducer {
         kafkaProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:19092,localhost:29092,localhost:39092");
         kafkaProps.put(KafkaProtobufSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://localhost:8081");
         kafkaProps.put(KafkaProtobufSerializerConfig.AUTO_REGISTER_SCHEMAS, true);
-        Producer<String, SimpleMessageProto.SimpleMessage> producer = new KafkaProducer<>(kafkaProps);
+        Producer<String, DynamicMessage> producer = new KafkaProducer<>(kafkaProps);
 
-        SimpleMessageProto.SimpleMessage message = SimpleMessageProto.SimpleMessage.newBuilder().setContent("Bryan").setDateTime(Instant.now().toString()).build();
-        Future<RecordMetadata> future = producer.send(new ProducerRecord<>("ProtoRequests", message), (recordMetadata, e) -> {
+        SimpleMessageProto.SimpleMessage message = SimpleMessageProto.SimpleMessage.newBuilder()
+                .setContent("Bryan")
+                .setDateTime(Instant.now().toString())
+                .build();
+        DynamicMessage dynamicMessage = DynamicMessage.newBuilder(message).build();
+        Future<RecordMetadata> future = producer.send(new ProducerRecord<>("ProtoRequests", dynamicMessage), (recordMetadata, e) -> {
             if (null == e) {
                 System.out.println(recordMetadata.topic() + " " + recordMetadata.partition());
-            }else{
+            } else {
                 e.printStackTrace();
             }
         });
-/*        while (future.isDone()) {
-            RecordMetadata recordMetadata = future.get(10, TimeUnit.SECONDS);
-            System.out.println(recordMetadata);
-        }*/
         producer.flush();
         producer.close();
-        //Thread.sleep(10000);
     }
 }

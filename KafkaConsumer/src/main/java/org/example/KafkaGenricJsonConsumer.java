@@ -3,7 +3,6 @@ package org.example;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -14,15 +13,14 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Properties;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Generic Json Consumer
  */
 public class KafkaGenricJsonConsumer {
+    private volatile boolean keepConsuming = true;
 
-    public static void main(String[] args) {
-
+    public Properties buildKafkaConfig() {
         Properties kafkaProps = new Properties();
         kafkaProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         kafkaProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, KafkaJsonSchemaDeserializer.class);
@@ -31,13 +29,15 @@ public class KafkaGenricJsonConsumer {
         kafkaProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
         kafkaProps.put("schema.registry.url", "http://localhost:8081");
         kafkaProps.put("json.fail.invalid.schema", true);
+        return kafkaProps;
+    }
+
+    public void consumeMessages() {
+        Properties kafkaProps = this.buildKafkaConfig();
         Consumer<String, JsonNode> consumer = new KafkaConsumer<>(kafkaProps);
         consumer.subscribe(Collections.singleton("JsonSchema3"));
-        AtomicInteger c = new AtomicInteger(0);
         ObjectMapper mapper = new ObjectMapper();
-        while (true) {
-            int i = c.incrementAndGet();
-            if (i == 50) break;
+        while (keepConsuming) {
             ConsumerRecords<String, JsonNode> poll = consumer.poll(Duration.ofMillis(300));
             System.out.println("polling records...." + poll.count());
             poll.forEach(record -> {
@@ -47,5 +47,15 @@ public class KafkaGenricJsonConsumer {
             });
         }
         consumer.close();
+    }
+
+    private void shutdown() {
+        keepConsuming = false;
+    }
+
+    public static void main(String[] args) {
+        KafkaGenricJsonConsumer consumer = new KafkaGenricJsonConsumer();
+        consumer.consumeMessages();
+        Runtime.getRuntime().addShutdownHook(new Thread(consumer::shutdown));
     }
 }

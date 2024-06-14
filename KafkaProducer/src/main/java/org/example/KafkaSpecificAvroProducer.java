@@ -30,12 +30,7 @@ public class KafkaSpecificAvroProducer {
                 e.printStackTrace();
             }
         });
-/*        while (future.isDone()) {
-            RecordMetadata recordMetadata = future.get(10, TimeUnit.SECONDS);
-            System.out.println(recordMetadata);
-        }*/
         producer.flush();
         producer.close();
-        //Thread.sleep(10000);
     }
 }
