@@ -30,7 +30,7 @@ public class AlertJacksonSerdeProducer {
         String alertStatus[] = new String[]{"Critical", "Major", "Minor", "Warning"};
         Random random = new Random();
         try (Producer<String, Alert> producer = new KafkaProducer<>(kafkaProps)) {
-            for (int i = 0; i < 11; i++) {
+            for (int i = 0; i < 10; i++) {
                 Alert alert = new Alert(i, "Stage " + i, alertStatus[random.nextInt(alertStatus.length)], "Stage " + i + " stopped");
                 ProducerRecord<String, Alert> producerRecord = new ProducerRecord<>("Alert2", alert.getStageId(), alert);
                 producer.send(producerRecord, (recordMetadata, e) -> {
