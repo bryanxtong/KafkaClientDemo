@@ -8,12 +8,10 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Properties;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class AlertGsonSerdeConsumer {
-
-    public static void main(String[] args) {
-
+    private volatile boolean keepConsuming = true;
+    public Properties buildKafkaConfig(){
         Properties kafkaProps = new Properties();
         kafkaProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         kafkaProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, GsonSerde.class);
@@ -21,19 +19,30 @@ public class AlertGsonSerdeConsumer {
         kafkaProps.put(ConsumerConfig.GROUP_ID_CONFIG, "group");
         kafkaProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
         kafkaProps.put(GsonSerde.CONFIG_VALUE_CLASS, Alert.class.getName());
+        return kafkaProps;
+    }
+
+    public void consumeMessages(){
+        Properties kafkaProps = this.buildKafkaConfig();
         Consumer<String, Alert> consumer = new KafkaConsumer<>(kafkaProps);
         consumer.subscribe(Collections.singleton("Alert2"));
-        AtomicInteger c = new AtomicInteger(0);
-        while (true) {
-            int i = c.incrementAndGet();
-            if (i == 50) break;
+        while (keepConsuming) {
             ConsumerRecords<String, Alert> consumerRecords = consumer.poll(Duration.ofMillis(250));
             System.out.println("polling records...." + consumerRecords.count());
             consumerRecords.forEach(record -> {
                 System.out.println("key \"" + record.key() + "\" value " + record.value() + " offset " + record.offset() + " partition " + record.partition());
             });
-            //consumer.commitAsync();
         }
         consumer.close();
+    }
+
+    public static void main(String[] args) {
+        AlertGsonSerdeConsumer consumer = new AlertGsonSerdeConsumer();
+        consumer.consumeMessages();
+        Runtime.getRuntime().addShutdownHook(new Thread(consumer::shutdown));
+    }
+
+    private void shutdown() {
+        keepConsuming = false;
     }
 }
