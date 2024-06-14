@@ -1,1 +1,1 @@
-MEExamples on how to serialize/deserialize avro/json with schema/proto message format
+Examples on how to serialize/deserialize avro/json with schema/proto message format with kafka
