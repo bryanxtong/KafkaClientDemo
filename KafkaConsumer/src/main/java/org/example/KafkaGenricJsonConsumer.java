@@ -33,7 +33,7 @@ public class KafkaGenricJsonConsumer {
     public void consumeMessages() {
         Properties kafkaProps = this.buildKafkaConfig();
         Consumer<String, JsonNode> consumer = new KafkaConsumer<>(kafkaProps);
-        consumer.subscribe(Collections.singleton("JsonSchema4"));
+        consumer.subscribe(Collections.singleton("JsonGeneric"));
         ObjectMapper mapper = new ObjectMapper();
         while (keepConsuming) {
             ConsumerRecords<String, JsonNode> poll = consumer.poll(Duration.ofMillis(300));

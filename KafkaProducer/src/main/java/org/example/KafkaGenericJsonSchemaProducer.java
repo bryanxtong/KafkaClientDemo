@@ -53,7 +53,7 @@ public class KafkaGenericJsonSchemaProducer {
         JsonNode jsonNode = objectMapper.valueToTree(product);
         ObjectNode envelope = JsonSchemaUtils.envelope(jsonSchema, jsonNode);
         //System.out.println(envelope.toString());
-        Future<RecordMetadata> future = producer.send(new ProducerRecord<>("JsonSchema3", envelope), (recordMetadata, e) -> {
+        Future<RecordMetadata> future = producer.send(new ProducerRecord<>("JsonSchemaGeneric", envelope), (recordMetadata, e) -> {
             if (null == e) {
                 System.out.println(recordMetadata.topic() + " " + recordMetadata.partition());
             } else {

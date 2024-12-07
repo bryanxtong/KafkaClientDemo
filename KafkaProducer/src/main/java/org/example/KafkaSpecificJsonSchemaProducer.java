@@ -34,7 +34,7 @@ public class KafkaSpecificJsonSchemaProducer {
         dimentions.setHeight(10);
         dimentions.setLength(10);
         product.setDimentions(dimentions);
-        Future<RecordMetadata> future = producer.send(new ProducerRecord<>("JsonSchema5", product), (recordMetadata, e) -> {
+        Future<RecordMetadata> future = producer.send(new ProducerRecord<>("JsonSchemaSpecific", product), (recordMetadata, e) -> {
             if (null == e) {
                 System.out.println(recordMetadata.topic() + " " + recordMetadata.partition());
             }else{
