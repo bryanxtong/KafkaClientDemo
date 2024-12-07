@@ -35,11 +35,11 @@ public class KafkaGenericJsonSchemaProducer {
         kafkaProps.put("schema.registry.url", "http://localhost:8081");
         Producer<String, JsonNode> producer = new KafkaProducer<>(kafkaProps);
 
-        Product product = new Product();
+        ProductWithSchema product = new ProductWithSchema();
         product.setProductId(100000);
         product.setProductName("phone");
         product.setPrice(8000);
-        Product.Dimentions dimentions = new Product.Dimentions();
+        ProductWithSchema.Dimentions dimentions = new ProductWithSchema.Dimentions();
         String[] tags = new String[]{"1"};
         product.setTags(tags);
         dimentions.setWidth(10);
