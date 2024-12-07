@@ -19,7 +19,7 @@ import java.util.concurrent.Future;
  *
  * Embedded the schema in java
  */
-public class KafkaGenericJsonProducer2 {
+public class KafkaGenericJsonSchemaProducer2 {
 
     public static void main(String[] args) {
         Properties kafkaProps = new Properties();

@@ -3,7 +3,7 @@ package org.example;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.confluent.kafka.serializers.KafkaJsonDeserializer;
+import io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -15,25 +15,27 @@ import java.util.Collections;
 import java.util.Properties;
 
 /**
- * Generic Json Consumer without json schema
+ * Generic Json Consumer
  */
-public class KafkaGenricJsonConsumer {
+public class KafkaGenricJsonSchemaConsumer {
     private volatile boolean keepConsuming = true;
 
     public Properties buildKafkaConfig() {
         Properties kafkaProps = new Properties();
         kafkaProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        kafkaProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, KafkaJsonDeserializer.class);
+        kafkaProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, KafkaJsonSchemaDeserializer.class);
         kafkaProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:19092,localhost:29092,localhost:39092");
         kafkaProps.put(ConsumerConfig.GROUP_ID_CONFIG, "group");
         kafkaProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+        kafkaProps.put("schema.registry.url", "http://localhost:8081");
+        kafkaProps.put("json.fail.invalid.schema", true);
         return kafkaProps;
     }
 
     public void consumeMessages() {
         Properties kafkaProps = this.buildKafkaConfig();
         Consumer<String, JsonNode> consumer = new KafkaConsumer<>(kafkaProps);
-        consumer.subscribe(Collections.singleton("JsonSchema4"));
+        consumer.subscribe(Collections.singleton("JsonSchema3"));
         ObjectMapper mapper = new ObjectMapper();
         while (keepConsuming) {
             ConsumerRecords<String, JsonNode> poll = consumer.poll(Duration.ofMillis(300));
@@ -52,7 +54,7 @@ public class KafkaGenricJsonConsumer {
     }
 
     public static void main(String[] args) {
-        KafkaGenricJsonConsumer consumer = new KafkaGenricJsonConsumer();
+        KafkaGenricJsonSchemaConsumer consumer = new KafkaGenricJsonSchemaConsumer();
         consumer.consumeMessages();
         Runtime.getRuntime().addShutdownHook(new Thread(consumer::shutdown));
     }

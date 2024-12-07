@@ -15,7 +15,7 @@ import java.util.Properties;
 /**
  * Consume Json record with Jason schema validation
  */
-public class KafkaSpecificJsonConsumer {
+public class KafkaSpecificJsonSchemaConsumer {
     private volatile boolean keepConsuming = true;
 
     public Properties buildKafkaConfig() {
@@ -50,7 +50,7 @@ public class KafkaSpecificJsonConsumer {
     }
 
     public static void main(String[] args) {
-        KafkaSpecificJsonConsumer consumer = new KafkaSpecificJsonConsumer();
+        KafkaSpecificJsonSchemaConsumer consumer = new KafkaSpecificJsonSchemaConsumer();
         consumer.consumeMessages();
         Runtime.getRuntime().addShutdownHook(new Thread(consumer::shutdown));
 

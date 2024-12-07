@@ -12,7 +12,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * Produce record with json schema validation which Using @Schema annotation on the Java object
  */
-public class KafkaSpecificJsonProducer {
+public class KafkaSpecificJsonSchemaProducer {
 
     public static void main(String[] args) throws ExecutionException, InterruptedException, TimeoutException {
         Properties kafkaProps = new Properties();
